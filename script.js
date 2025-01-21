@@ -47,9 +47,10 @@ function renderQuestions() {
       input.name = `question-${questionIndex}`;
       input.value = choice;
 
-      // Retain progress
+      // Retain progress and set the checked attribute
       if (userProgress[questionIndex] === choice) {
         input.checked = true;
+        input.setAttribute("checked", "true"); // Required for Cypress tests
       }
 
       // Save progress on change
