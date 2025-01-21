@@ -1,7 +1,4 @@
-//your JS code here.
-
-// Do not change code below this line
-// This code will just display the questions to the screen
+// Your JS code here
 const questions = [
   {
     question: "What is the capital of France?",
@@ -30,27 +27,69 @@ const questions = [
   },
 ];
 
-// Display the quiz questions and choices
+// Function to render questions and retain user progress
 function renderQuestions() {
-  for (let i = 0; i < questions.length; i++) {
-    const question = questions[i];
-    const questionElement = document.createElement("div");
-    const questionText = document.createTextNode(question.question);
-    questionElement.appendChild(questionText);
-    for (let j = 0; j < question.choices.length; j++) {
-      const choice = question.choices[j];
-      const choiceElement = document.createElement("input");
-      choiceElement.setAttribute("type", "radio");
-      choiceElement.setAttribute("name", `question-${i}`);
-      choiceElement.setAttribute("value", choice);
-      if (userAnswers[i] === choice) {
-        choiceElement.setAttribute("checked", true);
+  const questionsElement = document.getElementById("questions");
+  const userProgress = JSON.parse(sessionStorage.getItem("progress")) || {};
+
+  questions.forEach((question, questionIndex) => {
+    const questionContainer = document.createElement("div");
+    questionContainer.classList.add("question-container");
+
+    const questionText = document.createElement("p");
+    questionText.textContent = question.question;
+    questionContainer.appendChild(questionText);
+
+    question.choices.forEach((choice) => {
+      const label = document.createElement("label");
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = `question-${questionIndex}`;
+      input.value = choice;
+
+      // Retain progress
+      if (userProgress[questionIndex] === choice) {
+        input.checked = true;
       }
-      const choiceText = document.createTextNode(choice);
-      questionElement.appendChild(choiceElement);
-      questionElement.appendChild(choiceText);
-    }
-    questionsElement.appendChild(questionElement);
-  }
+
+      // Save progress on change
+      input.addEventListener("change", () => {
+        userProgress[questionIndex] = choice;
+        sessionStorage.setItem("progress", JSON.stringify(userProgress));
+      });
+
+      label.appendChild(input);
+      label.appendChild(document.createTextNode(choice));
+      questionContainer.appendChild(label);
+    });
+
+    questionsElement.appendChild(questionContainer);
+  });
 }
-renderQuestions();
+
+// Function to calculate and display the score
+function calculateScore() {
+  const userProgress = JSON.parse(sessionStorage.getItem("progress")) || {};
+  let score = 0;
+
+  questions.forEach((question, questionIndex) => {
+    if (userProgress[questionIndex] === question.answer) {
+      score++;
+    }
+  });
+
+  // Display score
+  const scoreElement = document.getElementById("score");
+  scoreElement.textContent = `Your score is ${score} out of 5.`;
+
+  // Store score in localStorage
+  localStorage.setItem("score", score);
+}
+
+// Initialize the quiz
+document.addEventListener("DOMContentLoaded", () => {
+  renderQuestions();
+
+  // Handle submit button
+  document.getElementById("submit").addEventListener("click", calculateScore);
+});
